@@ -4,6 +4,21 @@ import numpy as np
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    """Load the messages and categories data.
+    Merge them and return the merged dataframe.
+
+    Parameters
+    ----------
+    messages_filepath: String
+        Path to the messages csv file
+    generator: String
+        Path to the categories csv file
+
+    Returns
+    -------
+    Pandas Dataframe
+        Messages df merged with categories df
+    """
     messages_df = pd.read_csv(messages_filepath)
     categories_df = pd.read_csv(categories_filepath)
 
@@ -11,23 +26,19 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    categories = df.categories.str.split(';', expand=True)
-    # select the first row of the categories dataframe
-    row = categories.iloc[0, :]
+    """Clean and prepare the merged messages and categories data.
 
-    # use this row to extract a list of new column names for categories.
-    # one way is to apply a lambda function that takes everything 
-    # up to the second to last character of each string with slicing
-    category_colnames = row.apply(lambda x: x.split('-')[0]).values
-    categories.columns = category_colnames
+    Parameters
+    ----------
+    df: Pandas Dataframe
+        Pandas Dataframe with the messages and categories data
 
-    for column in categories:
-        # set each value to be the last character of the string
-        categories[column] = \
-            categories[column].astype(str).str.split('-').str[-1]
-        
-        # convert column from string to numeric
-        categories[column] = pd.to_numeric(categories[column])
+    Returns
+    -------
+    Pandas Dataframe
+        Cleaned data
+    """
+    categories = _getting_categories(df)
 
     df.drop('categories', axis=1, inplace=True)
     df = pd.concat([df, categories], axis=1)
@@ -37,8 +48,45 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    """Save the data on the database
+
+    Parameters
+    ----------
+    df: Pandas Dataframe
+        Pandas Dataframe with the cleaned data
+    database_filename: String
+        The database filename
+    """
     engine = create_engine(f'sqlite:///{database_filename}')
-    df.to_sql(df, engine, index=False)  
+    df.to_sql(df, engine, index=False)
+
+
+def _getting_categories(df):
+    """Gets the formatted categories
+
+    Parameters
+    ----------
+    df: Pandas Dataframe
+        Pandas Dataframe with the messages and categories data
+
+    Returns
+    -------
+    Pandas Dataframe
+        Dataframe with the cleaned categories
+    """
+    categories = df.categories.str.split(';', expand=True)
+    row = categories.iloc[0, :]
+
+    category_colnames = row.apply(lambda x: x.split('-')[0]).values
+    categories.columns = category_colnames
+
+    for column in categories:
+        categories[column] = \
+            categories[column].astype(str).str.split('-').str[-1]
+        
+        categories[column] = pd.to_numeric(categories[column])
+    
+    return categories
 
 
 def main():
