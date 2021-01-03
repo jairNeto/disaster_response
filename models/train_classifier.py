@@ -9,18 +9,13 @@ from nltk.corpus import stopwords
 from sqlalchemy import create_engine
 from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 import joblib
 from xgboost import XGBClassifier
-import os
-PACKAGE_PARENT = '..'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-from app.extractor_transformers import CountPosTagTransformer
+import extractor_transformers
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger', 'stopwords'])
 
 
@@ -41,7 +36,6 @@ def load_data(database_filepath):
     """
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql_table('disasters_df', engine)
-    df.drop('child_alone', inplace=True, axis=1)
     X = df.message.values
     Y = df.iloc[:, 4:].values
     category_names = df.iloc[:, 4:].columns
@@ -95,10 +89,12 @@ def build_model():
                 ('tfidf', TfidfTransformer())
             ])),
 
-            ('num_verbs', CountPosTagTransformer('VB')),
-            ('num_nouns', CountPosTagTransformer('JJ')),
-            ('num_adjectives', CountPosTagTransformer('PRP')),
-            ('num_pronouns', CountPosTagTransformer('NN'))
+            ('num_verbs', extractor_transformers.CountPosTagTransformer('VB')),
+            ('num_nouns', extractor_transformers.CountPosTagTransformer('JJ')),
+            ('num_adjectives',
+             extractor_transformers.CountPosTagTransformer('PRP')),
+            ('num_pronouns',
+             extractor_transformers.CountPosTagTransformer('NN'))
         ])),
 
         ('clf', MultiOutputClassifier(XGBClassifier()))
@@ -129,9 +125,9 @@ def evaluate_model(model, X_test, Y_test, category_names):
     """
     y_predicted = model.predict(X_test)
     for i, col in enumerate(category_names):
+        print(col)
         print(classification_report(Y_test[:, i],
-                                    y_predicted[:, i],
-                                    target_names=category_names))
+                                    y_predicted[:, i]))
 
 
 def save_model(model, model_filepath):
