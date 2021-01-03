@@ -10,17 +10,8 @@ class CountPosTagTransformer(BaseEstimator, TransformerMixin):
     The tags could be: verb, adjective, pronoun and noun.
     """
 
-    def __init__(self, tag_to_sum='verb'):
-        if tag_to_sum == 'verb':
-            self.tag_to_sum = 'VB'
-        elif tag_to_sum == 'adjective':
-            self.tag_to_sum = 'JJ'
-        elif tag_to_sum == 'pronoun':
-            self.tag_to_sum = 'PRP'
-        elif tag_to_sum == 'noun':
-            self.tag_to_sum = 'NN'
-        else:
-            print('ERROR')
+    def __init__(self, tag_to_sum):
+        self.tag_to_sum = tag_to_sum
 
     def sum_types(self, text):
         """Sum the number of a specific tag at a text
