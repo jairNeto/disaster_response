@@ -10,6 +10,8 @@ from flask import render_template, request
 from plotly.graph_objs import Bar
 import joblib
 from sqlalchemy import create_engine
+import sys
+sys.path.insert(1, '../models/')
 
 
 app = Flask(__name__)
