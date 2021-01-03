@@ -104,10 +104,12 @@ pipeline = Pipeline([
                 ('tfidf', TfidfTransformer())
             ])),
 
-            ('num_verbs', CountPosTagTransformer('VB')),
-            ('num_nouns', CountPosTagTransformer('JJ')),
-            ('num_adjectives', CountPosTagTransformer('PRP')),
-            ('num_pronouns', CountPosTagTransformer('NN'))
+            ('num_verbs', extractor_transformers.CountPosTagTransformer('VB')),
+            ('num_nouns', extractor_transformers.CountPosTagTransformer('JJ')),
+            ('num_adjectives',
+             extractor_transformers.CountPosTagTransformer('PRP')),
+            ('num_pronouns',
+             extractor_transformers.CountPosTagTransformer('NN'))
         ])),
 
         ('clf', MultiOutputClassifier(XGBClassifier()))
