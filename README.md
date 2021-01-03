@@ -64,6 +64,7 @@ $ pip install -r requirements.txt
 - The `models` have the script to train and classify the data.
 - The `app` folder with all the python scripts and html to build and run the web project.
 - The `requirements.txt` has the needed packages to run the notebook.
+- The `notebooks` folder contains the notebook used to train the different models.
 
 ## Data Analysis <a name="data"></a>
 
