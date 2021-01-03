@@ -41,6 +41,7 @@ def load_data(database_filepath):
     """
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql_table('disasters_df', engine)
+    df.drop('child_alone', inplace=True, axis=1)
     X = df.message.values
     Y = df.iloc[:, 4:].values
     category_names = df.iloc[:, 4:].columns
@@ -94,16 +95,22 @@ def build_model():
                 ('tfidf', TfidfTransformer())
             ])),
 
-            ('num_verbs', CountPosTagTransformer('verb')),
-            ('num_nouns', CountPosTagTransformer('noun')),
-            ('num_adjectives', CountPosTagTransformer('adjective')),
-            ('num_pronouns', CountPosTagTransformer('pronoun'))
+            ('num_verbs', CountPosTagTransformer('VB')),
+            ('num_nouns', CountPosTagTransformer('JJ')),
+            ('num_adjectives', CountPosTagTransformer('PRP')),
+            ('num_pronouns', CountPosTagTransformer('NN'))
         ])),
 
         ('clf', MultiOutputClassifier(XGBClassifier()))
     ])
 
-    return pipeline
+    parameters = {
+        'clf__estimator__learning_rate': [0.1, 0.01],
+    }
+
+    cv_pipeline = GridSearchCV(pipeline, param_grid=parameters)
+
+    return cv_pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -124,7 +131,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     for i, col in enumerate(category_names):
         print(classification_report(Y_test[:, i],
                                     y_predicted[:, i],
-                                    output_dict=True))
+                                    target_names=category_names))
 
 
 def save_model(model, model_filepath):
