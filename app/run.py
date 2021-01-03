@@ -45,6 +45,17 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
+    cols_df = pd.DataFrame(columns=['col', 'num_obs'])
+    for col in df.iloc[:, 4:].columns:
+        cols_df = \
+            cols_df.append({'col': col,
+                            'num_obs': df[df[col] == 1].shape[0]},
+                           ignore_index=True)
+
+    cols_df = cols_df.sort_values(['num_obs'])
+    labels_list, num_obs_labels = \
+        cols_df['col'].values, cols_df['num_obs'].values
+
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -63,6 +74,22 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        {
+            'data': [
+                Bar(
+                    x=num_obs_labels,
+                    y=labels_list,
+                    orientation='h'
+                )
+            ],
+
+            'layout': {
+                'title': 'Number of observations per label',
+                'xaxis': {
+                    'title': "Label"
                 }
             }
         }
