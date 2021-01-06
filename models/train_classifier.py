@@ -97,7 +97,7 @@ def build_model():
              extractor_transformers.CountPosTagTransformer('NN'))
         ])),
 
-        ('clf', MultiOutputClassifier(XGBClassifier()))
+        ('clf', MultiOutputClassifier(XGBClassifier(eval_metric="logloss")))
     ])
 
     parameters = {
