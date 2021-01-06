@@ -9,8 +9,8 @@
 5. [Data Analysis](#data)
 6. [Model](#model)
 7. [Results](#results)
-8. [Final Considerations](#considerations)
-
+8. [Next Steps](#steps)
+9. [Final Considerations](#considerations)
 
 ## Overview <a name="overview"></a>
 
@@ -159,6 +159,11 @@ As we can see the labels that have less data in the dataset tended to have a bet
 that have more data. As we can see the labels related and aid_related that are the labels that have more data were
 the ones with the worst F1-score.
 Probably, it's  happening overfitting on the labels that have less data.
+
+## Nest Steps <a name="steps"></a>
+
+- [ ] Remove the outliers, the messages with more then 61 words.
+- [ ] Add more parameters at the Grid Search
 
 ## Final Considerations and acknowledgments <a name="considerations"></a>
 
