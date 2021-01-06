@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Histogram, Box
 import joblib
 from sqlalchemy import create_engine
 import sys
@@ -47,16 +47,13 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 
-    cols_df = pd.DataFrame(columns=['col', 'num_obs'])
-    for col in df.iloc[:, 4:].columns:
-        cols_df = \
-            cols_df.append({'col': col,
-                            'num_obs': df[df[col] == 1].shape[0]},
-                           ignore_index=True)
+    labels_list, num_obs_labels = _get_num_obs_per_label(df)
 
-    cols_df = cols_df.sort_values(['num_obs'])
-    labels_list, num_obs_labels = \
-        cols_df['col'].values, cols_df['num_obs'].values
+    df['words_count'] = df['message'].apply(lambda x: len(word_tokenize(x)))
+    words_count_list = \
+        list(df.words_count)
+
+    words_count_list_filtered = list(df[df['words_count'] < 61].words_count)
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -94,6 +91,48 @@ def index():
                     'title': "Label"
                 }
             }
+        },
+        {
+            'data': [
+                Histogram(
+                    x=words_count_list
+                )
+            ],
+
+            'layout': {
+                'title': 'Histogram number of words per message',
+                'xaxis': {
+                    'title': "Number of words"
+                }
+            }
+        },
+        {
+            'data': [
+                Box(
+                    x=words_count_list
+                )
+            ],
+
+            'layout': {
+                'title': 'Box Plot number of words per message'
+            }
+        },
+        {
+            'data': [
+                Histogram(
+                    x=words_count_list_filtered,
+                    xbins=dict(size=2),
+                    autobinx=False
+                    )
+            ],
+
+            'layout': {
+                'title': 'Histogram number of words per message filtering only'
+                ' messages with less then 61 words',
+                'xaxis': {
+                    'title': "Number of words"
+                }
+            }
         }
     ]
 
@@ -104,6 +143,32 @@ def index():
     # render web page with plotly graphs
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
+
+def _get_num_obs_per_label(df):
+    """Gets the number of observations per each label
+
+    Parameters
+    ----------
+    df: Pandas Dataframe
+        Pandas Dataframe with the messages and categories data
+
+    Returns
+    -------
+    Tuple
+        The labels
+        The number of observations for each label
+    """
+
+    cols_df = pd.DataFrame(columns=['col', 'num_obs'])
+    for col in df.iloc[:, 4:].columns:
+        cols_df = \
+            cols_df.append({'col': col,
+                            'num_obs': df[df[col] == 1].shape[0]},
+                           ignore_index=True)
+
+    cols_df = cols_df.sort_values(['num_obs'])
+
+    return cols_df['col'].values, cols_df['num_obs'].values
 
 # web page that handles user query and displays model results
 @app.route('/go')
