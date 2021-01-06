@@ -58,7 +58,7 @@ def save_data(df, database_filename):
         The database filename
     """
     engine = create_engine(f'sqlite:///{database_filename}')
-    df.to_sql('disasters_df', engine, index=False)
+    df.to_sql('disasters_df', engine, index=False, if_exists='replace')
 
 
 def _getting_categories(df):
