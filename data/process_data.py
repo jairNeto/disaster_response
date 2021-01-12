@@ -44,6 +44,9 @@ def clean_data(df):
     df = pd.concat([df, categories], axis=1)
     df.drop_duplicates(inplace=True)
 
+    related_mode = df['related'].mode()[0]
+    df.loc[df['related'] == 2, 'related'] = related_mode
+
     return df
 
 
